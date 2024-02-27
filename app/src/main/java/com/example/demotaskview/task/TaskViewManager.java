@@ -393,7 +393,7 @@ public final class TaskViewManager {
         mTaskViewInputInterceptor = taskViewInputInterceptor;
     }
 
-    boolean isReleased() {
+    public boolean isReleased() {
         return mReleased;
     }
 }

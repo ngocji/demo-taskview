@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
 import android.util.ArraySet
+import android.util.Log
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -28,6 +29,12 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (this::mTaskViewManager.isInitialized && mTaskViewManager.isReleased) {
+            setUpTaskView(findViewById<CardView>(R.id.card))
+        }
+    }
 
 
     private fun setUpTaskView(parent: ViewGroup) {
