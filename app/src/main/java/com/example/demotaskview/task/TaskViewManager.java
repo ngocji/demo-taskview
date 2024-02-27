@@ -208,7 +208,7 @@ public final class TaskViewManager {
         mTaskViewInputInterceptor = new TaskViewInputInterceptor(context, this);
 
         initCar();
-        shellInit.init();
+//        shellInit.init();
         initTaskOrganizer(mCarActivityManagerRef);
         mContext.registerActivityLifecycleCallbacks(mActivityLifecycleCallbacks);
     }
