@@ -1,0 +1,1 @@
+emulator -avd Pixel_6_Pro_API_33 -writable-system
