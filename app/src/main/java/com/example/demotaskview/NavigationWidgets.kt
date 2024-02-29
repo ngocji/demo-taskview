@@ -23,9 +23,11 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +51,13 @@ fun NavigationWidgets(modifier: Modifier) {
 
     var viewGroup by remember {
         mutableStateOf<ViewGroup?>(null)
+    }
+
+    SideEffect {
+        // Setting as trusted overlay to let touches pass through.
+        activity.window.addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
+        // To pass touches to the underneath task.
+        activity.window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL)
     }
 
     LaunchedEffect(
