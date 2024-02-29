@@ -55,12 +55,12 @@ class ControlledCarTaskView(
     controlledCarTaskViewConfig: ControlledCarTaskViewConfig,
     callbacks: ControlledCarTaskViewCallbacks,
     userManager: UserManager,
-    taskViewManager: ITaskViewManager
+    taskViewManager: TaskViewManager
 ) : CarTaskView(context, organizer, taskViewTransitions, syncQueue, true) {
     private var mCallbackExecutor: Executor? = null
     private var mCallbacks: ControlledCarTaskViewCallbacks? = null
     private var mUserManager: UserManager? = null
-    private val mTaskViewManager: ITaskViewManager
+    private val mTaskViewManager: TaskViewManager
     private val mConfig: ControlledCarTaskViewConfig
     private var mStartActivityWithBackoff: RunnerWithBackoff? = null
 
@@ -125,6 +125,7 @@ class ControlledCarTaskView(
             Timber.w("$TAG Can't start activity due to the display is off")
             return
         }
+
         val launchBounds = Rect()
         getBoundsOnScreen(launchBounds)
         setWindowBounds(launchBounds)

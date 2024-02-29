@@ -18,38 +18,38 @@
 package com.example.demotaskview.task
 
 import android.app.Activity
-import android.app.ActivityOptions
+import android.app.ActivityManager
+import android.app.ActivityTaskManager
 import android.app.Application
-import android.app.PendingIntent
 import android.app.TaskStackListener
-import android.app.WindowConfiguration
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
-import android.graphics.Rect
+import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
 import android.os.UserManager
+import android.window.WindowContainerTransaction
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.HandlerExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.common.TransactionPool
 import com.android.wm.shell.common.annotations.ShellMainThread
-import com.android.wm.shell.taskview.TaskView
 import timber.log.Timber
 import java.util.concurrent.Executor
 
-class TaskViewManager(private val context: Activity, private val handler: Handler) :
-    ITaskViewManager {
+class TaskViewManager(private val context: Activity, private val handler: Handler) {
     @ShellMainThread
     private val mShellExecutor = HandlerExecutor(handler)
     private val mSyncQueue =
         SyncTransactionQueue(TransactionPool(), mShellExecutor)
     private val mTaskOrganizer = ShellTaskOrganizer(mShellExecutor)
-    override val isHostVisible: Boolean
+    val isHostVisible: Boolean
         get() = context.isVisibleForAutofill()
 
     // All TaskView are bound to the Host Activity if it exists.
     @ShellMainThread
-    override val controlledTaskViews = mutableListOf<ControlledCarTaskView>()
+    val controlledTaskViews = mutableListOf<ControlledCarTaskView>()
     private val mTaskViewInputInterceptor = TaskViewInputInterceptor(context, this)
     private var isReleased = false
     private var mHostTaskId = 0
@@ -91,20 +91,58 @@ class TaskViewManager(private val context: Activity, private val handler: Handle
             }
 
             // todo try open again taskview
-//            for (i in controlledTaskViews.indices.reversed()) {
-//                val taskView = controlledTaskViews[i]
-//                if (taskView.taskId == ActivityTaskManager.INVALID_TASK_ID) {
-//                    // If the task in TaskView is crashed when host is in background,
-//                    // We'd like to restart it when host becomes foreground and focused.
-//                    taskView.startActivity()
-//                }
-//            }
+            for (i in controlledTaskViews.indices.reversed()) {
+                val taskView = controlledTaskViews[i]
+                if (taskView.taskId == ActivityTaskManager.INVALID_TASK_ID) {
+                    // If the task in TaskView is crashed when host is in background,
+                    // We'd like to restart it when host becomes foreground and focused.
+                    taskView.startActivity()
+                }
+            }
+        }
+
+        override fun onActivityRestartAttempt(
+            task: ActivityManager.RunningTaskInfo,
+            homeTaskVisible: Boolean,
+            clearedTask: Boolean,
+            wasVisible: Boolean,
+        ) {
+            Timber.d(
+                "$TAG onActivityRestartAttempt: taskId=" + task.taskId
+                        + ", homeTaskVisible=" + homeTaskVisible + ", wasVisible=" + wasVisible,
+            )
+
+            if (mHostTaskId != task.taskId) {
+                return
+            }
+
+            showEmbeddedTasks()
+        }
+    }
+
+    private val packageBroadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Timber.d("$TAG onReceive: intent=%s", intent)
+            if (!isHostVisible) {
+                return
+            }
+            val packageName = intent.data?.schemeSpecificPart.orEmpty()
+            for (i in controlledTaskViews.indices.reversed()) {
+                val taskView = controlledTaskViews[i]
+                if (taskView.taskId == ActivityTaskManager.INVALID_TASK_ID
+                    && taskView.getDependingPackageNames().contains(packageName)
+                ) {
+                    taskView.startActivity()
+                }
+            }
         }
     }
 
     init {
         mHostTaskId = context.taskId
+
         initTaskStackChanged()
+
         context.registerActivityLifecycleCallbacks(mActivityLifecycleCallbacks)
     }
 
@@ -137,10 +175,9 @@ class TaskViewManager(private val context: Activity, private val handler: Handle
 
     private fun initTaskStackChanged() {
         TaskStackChangeListeners.instance.registerTaskStackListener(mTaskStackListener)
-        // todo visible for testing
-//        val packageIntentFilter = IntentFilter(Intent.ACTION_PACKAGE_REPLACED)
-//        packageIntentFilter.addDataScheme(SCHEME_PACKAGE)
-//        context.registerReceiver(packageBroadcastReceiver, packageIntentFilter)
+        val packageIntentFilter = IntentFilter(Intent.ACTION_PACKAGE_REPLACED)
+        packageIntentFilter.addDataScheme(SCHEME_PACKAGE)
+        context.registerReceiver(packageBroadcastReceiver, packageIntentFilter)
     }
 
     /**
@@ -151,7 +188,7 @@ class TaskViewManager(private val context: Activity, private val handler: Handle
         mShellExecutor.execute {
             Timber.d("$TAG TaskViewManager.release")
             TaskStackChangeListeners.instance.unregisterTaskStackListener(mTaskStackListener)
-//            context.unregisterReceiver(packageBroadcastReceiver) // todo visible for testing
+            context.unregisterReceiver(packageBroadcastReceiver)
 
             for (i in controlledTaskViews.indices.reversed()) {
                 controlledTaskViews[i].release()
@@ -164,61 +201,16 @@ class TaskViewManager(private val context: Activity, private val handler: Handle
         }
     }
 
-    private fun startActivityInternal(taskView: TaskView, config: ControlledCarTaskViewConfig) {
-//        if (mUserManager?.isUserUnlocked == false) {
-//            Timber.d(
-//                "${ControlledCarTaskView.TAG} Can't start activity due to user is isn't unlocked"
-//            )
-//            return
-//        }
-//
-//        // Don't start activity when the display is off. This can happen when the taskView is not
-//        // attached to a window.
-//        if (display == null) {
-//            Timber.w(
-//                "${ControlledCarTaskView.TAG} Can't start activity because display is not available in "
-//                        + "taskView yet."
-//            )
-//            return
-//        }
-//        // Don't start activity when the display is off for ActivityVisibilityTests.
-//        if (display.state != Display.STATE_ON) {
-//            Timber.w("${ControlledCarTaskView.TAG} Can't start activity due to the display is off")
-//            return
-//        }
-        val launchBounds = Rect()
-        taskView.getBoundsOnScreen(launchBounds)
-//        taskView.setWindowBounds(launchBounds)
-        taskView.setObscuredTouchRect(launchBounds)
-
-
-        val options = ActivityOptions.makeCustomAnimation(
-            context,
-            /* enterResId= */
-            0,
-            /* exitResId= */0
-        )
-            .setLaunchBounds(launchBounds)
-
-        options.setLaunchWindowingMode(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW)
-        options.setRemoveWithTaskOrganizer(true)
-
-        Timber.d(
-            "${ControlledCarTaskView.TAG} Starting (" + config.mActivityIntent.component + ") on "
-                    + launchBounds
-        )
-        var fillInIntent: Intent? = null
-        if (config.mActivityIntent.flags and Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS != 0) {
-            fillInIntent = Intent().addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+    /**
+     * Shows all the embedded tasks. If the tasks are
+     */
+    private fun showEmbeddedTasks() {
+        val wct = WindowContainerTransaction()
+        for (i in controlledTaskViews.indices.reversed()) {
+            // showEmbeddedTasks() will restart the crashed tasks too.
+            controlledTaskViews[i].showEmbeddedTask(wct)
         }
-        taskView.startActivity(
-            PendingIntent.getActivity(
-                context,  /* requestCode= */0,
-                config.mActivityIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            ),
-            fillInIntent, options, launchBounds
-        )
+        mSyncQueue.queue(wct)
     }
 
     companion object {

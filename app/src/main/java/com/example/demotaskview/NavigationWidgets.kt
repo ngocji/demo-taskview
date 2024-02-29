@@ -51,10 +51,6 @@ fun NavigationWidgets(modifier: Modifier) {
         mutableStateOf<ViewGroup?>(null)
     }
 
-    var isTaskViewCreated by remember {
-        mutableStateOf(false)
-    }
-
     LaunchedEffect(
         key1 = viewGroup,
         block = {

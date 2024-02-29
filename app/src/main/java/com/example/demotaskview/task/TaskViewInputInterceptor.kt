@@ -43,7 +43,7 @@ import timber.log.Timber
  */
 class TaskViewInputInterceptor internal constructor(
     private val mHostActivity: Activity,
-    private val mTaskViewManager: ITaskViewManager
+    private val mTaskViewManager: TaskViewManager
 ) {
     private val mInputManager: InputManager
     private val mWm: WindowManager
