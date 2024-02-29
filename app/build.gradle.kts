@@ -2,12 +2,13 @@ import groovy.namespace.QName
 import groovy.util.Node
 import groovy.xml.XmlParser
 import groovy.xml.XmlUtil
-import java.io.FileNotFoundException
 import java.io.FileOutputStream
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ksp)
+    kotlin("kapt")
 }
 
 android {
@@ -33,20 +34,19 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+
+    buildFeatures {
+        buildConfig = true
+        compose = true
+        viewBinding = true
+        aidl = true
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+
     useLibrary("android.car")
-
-
 }
 
 dependencies {
-    compileOnly(files("libs/framework-14.jar"))
+    compileOnly(rootProject.files("app/sdk/framework-14.jar"))
     implementation(files("libs/WindowManager-Shell-14.jar"))
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
@@ -56,9 +56,26 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation(projects.iconloaderlib)
 
+    implementation(platform(libs.androidx.compose.bom))
 
-    implementation(project(":iconloaderlib"))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.process)
+
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.util)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.constraint.layout)
+    implementation(libs.androidx.navigation.compose)
 }
 
 project.tasks.preBuild.get().doLast {

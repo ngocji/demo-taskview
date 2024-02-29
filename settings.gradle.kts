@@ -3,6 +3,8 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven("https://maven.google.com/")
+        maven("https://oss.sonatype.org/content/repositories/snapshots")
     }
 }
 dependencyResolutionManagement {
@@ -10,9 +12,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven("https://maven.google.com/")
+        maven("https://oss.sonatype.org/content/repositories/snapshots")
     }
 }
-
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "DemoTaskView"
 include(":app")
 include(":iconloaderlib")

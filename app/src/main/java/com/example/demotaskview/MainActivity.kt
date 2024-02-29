@@ -1,73 +1,70 @@
 package com.example.demotaskview
 
-import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.provider.Settings
-import android.util.ArraySet
-import android.util.Log
-import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
-import com.android.wm.shell.taskview.TaskView
-import com.example.demotaskview.task.CarTaskView
-import com.example.demotaskview.task.ControlledCarTaskViewCallbacks
-import com.example.demotaskview.task.ControlledCarTaskViewConfig
-import com.example.demotaskview.task.TaskViewManager
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
 
-class MainActivity : AppCompatActivity() {
-    private var mTaskView: TaskView? = null
-    private lateinit var mTaskViewManager: TaskViewManager;
+class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        val view = findViewById<CardView>(R.id.card)
+        setContent {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(22.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            Toast
+                                .makeText(this@MainActivity, "ClickBar", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                        .clip(RoundedCornerShape(12.dp))
+                        .fillMaxHeight()
+                        .background(color = Color.Green)
+                        .padding(4.dp)
+                )
 
-        setUpTaskView(view)
+                NavigationWidgets(
+                    modifier = Modifier
+                        .weight(2f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .fillMaxHeight()
+                        .background(color = Color.Blue)
+                )
 
-    }
 
-    override fun onStart() {
-        super.onStart()
-        if (this::mTaskViewManager.isInitialized && mTaskViewManager.isReleased) {
-            setUpTaskView(findViewById<CardView>(R.id.card))
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .fillMaxHeight()
+                        .background(color = Color.Green)
+                        .padding(4.dp),
+                )
+            }
+
         }
     }
-
-
-    private fun setUpTaskView(parent: ViewGroup) {
-        val taskViewPackages: Set<String> = ArraySet()
-        mTaskViewManager = TaskViewManager(this, Handler(mainLooper))
-        mTaskViewManager.createControlledCarTaskView(
-            mainExecutor,
-            ControlledCarTaskViewConfig.builder()
-                .setActivityIntent(getMapsIntent()) // TODO(b/263876526): Enable auto restart after ensuring no CTS failure.
-                .setAutoRestartOnCrash(false)
-                .build(),
-            object : ControlledCarTaskViewCallbacks {
-                override fun onTaskViewCreated(taskView: CarTaskView) {
-                    parent.addView(taskView)
-                    mTaskView = taskView
-                }
-
-                override fun onTaskViewReady() {
-//                        maybeLogReady();
-                }
-
-                override fun getDependingPackageNames(): Set<String> {
-                    return taskViewPackages
-                }
-            })
-    }
-
-    private fun getMapsIntent(): Intent {
-        val mapIntent = Intent(Settings.ACTION_SETTINGS)
-        // Don't want to show this Activity in Recents.
-        mapIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
-        return mapIntent
-    }
-
 
 }
