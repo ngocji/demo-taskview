@@ -79,7 +79,7 @@ open class CarTaskView(
         mSyncQueue = syncQueue
         focusable = NOT_FOCUSABLE
 
-        setZOrderOnTop(true)
+        setZOrderOnTop(false)
         getHolder().setFormat(PixelFormat.TRANSLUCENT)
     }
 
@@ -104,10 +104,18 @@ open class CarTaskView(
     }
 
     override fun dispatchDraw(canvas: Canvas) {
-        path?.run {
-            canvas.clipPath(this)
-        }
+        clipRound(canvas)
         super.dispatchDraw(canvas)
+    }
+
+    override fun draw(canvas: Canvas) {
+
+        super.draw(canvas)
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+
     }
 
     /**
@@ -236,6 +244,15 @@ open class CarTaskView(
      */
     val taskId
         get() = mTaskViewTaskController?.taskInfo?.taskId ?: ActivityTaskManager.INVALID_TASK_ID
+
+
+    private fun clipRound(canvas: Canvas) {
+        path?.run {
+            Timber.e("$TAG start cliping: $this")
+            canvas.clipPath(this)
+        }
+    }
+
 
     companion object {
         private val TAG = CarTaskView::class.java.simpleName
