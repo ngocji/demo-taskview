@@ -21,7 +21,11 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.ActivityTaskManager
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Path
+import android.graphics.PixelFormat
 import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Binder
 import android.util.SparseArray
 import android.view.InsetsSource
@@ -66,12 +70,17 @@ open class CarTaskView(
     private var mInsets = SparseArray<Rect>()
     private var mTaskViewReadySent = false
     private var mTaskViewTaskController: TaskViewTaskController? = null
+    private var path: Path? = null
+    private var cornerRadius = 30f
 
     init {
         mTaskViewTaskController = taskViewTaskController
         mTaskViewTaskController?.setHideTaskWithSurface(shouldHideTask)
         mSyncQueue = syncQueue
         focusable = NOT_FOCUSABLE
+
+        setZOrderOnTop(true)
+        getHolder().setFormat(PixelFormat.TRANSLUCENT)
     }
 
     override fun onTaskAppeared(
@@ -81,6 +90,24 @@ open class CarTaskView(
         mTaskToken = taskInfo?.getToken()
         super.onTaskAppeared(taskInfo, leash)
         applyAllInsets()
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        this.path = Path()
+        this.path?.addRoundRect(
+            RectF(0f, 0f, w.toFloat(), h.toFloat()),
+            cornerRadius,
+            cornerRadius,
+            Path.Direction.CW
+        )
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        path?.run {
+            canvas.clipPath(this)
+        }
+        super.dispatchDraw(canvas)
     }
 
     /**

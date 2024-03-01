@@ -23,11 +23,9 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +37,7 @@ import com.android.wm.shell.taskview.TaskView
 import com.example.demotaskview.task.ControlledCarTaskViewCallbacks
 import com.example.demotaskview.task.ControlledCarTaskViewConfig
 import com.example.demotaskview.task.TaskViewManager
+import com.google.android.material.card.MaterialCardView
 import timber.log.Timber
 
 @Composable
@@ -53,12 +52,12 @@ fun NavigationWidgets(modifier: Modifier) {
         mutableStateOf<ViewGroup?>(null)
     }
 
-    SideEffect {
-        // Setting as trusted overlay to let touches pass through.
-        activity.window.addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
-        // To pass touches to the underneath task.
-        activity.window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL)
-    }
+//    SideEffect {
+//        // Setting as trusted overlay to let touches pass through.
+//        activity.window.addPrivateFlags(WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
+//        // To pass touches to the underneath task.
+//        activity.window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL)
+//    }
 
     LaunchedEffect(
         key1 = viewGroup,
@@ -90,6 +89,7 @@ fun NavigationWidgets(modifier: Modifier) {
         modifier = modifier,
         factory = { ctx ->
             FrameLayout(ctx).apply {
+                clipToOutline = true
                 viewGroup = this
             }
         },
