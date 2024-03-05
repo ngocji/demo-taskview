@@ -46,6 +46,7 @@ class TaskViewManager(private val context: Activity, private val handler: Handle
     private val mTaskOrganizer = ShellTaskOrganizer(mShellExecutor)
     val isHostVisible: Boolean
         get() = context.isVisibleForAutofill()
+    var isPendingRestartActivity = false
 
     // All TaskView are bound to the Host Activity if it exists.
     @ShellMainThread
@@ -86,7 +87,7 @@ class TaskViewManager(private val context: Activity, private val handler: Handle
                         + ", hostFocused=" + hostFocused,
             )
 
-            if (!hostFocused) {
+            if (!hostFocused || isPendingRestartActivity) {
                 return
             }
 
@@ -112,7 +113,7 @@ class TaskViewManager(private val context: Activity, private val handler: Handle
                         + ", homeTaskVisible=" + homeTaskVisible + ", wasVisible=" + wasVisible,
             )
 
-            if (mHostTaskId != task.taskId) {
+            if (mHostTaskId != task.taskId || isPendingRestartActivity) {
                 return
             }
 

@@ -140,8 +140,8 @@ class ControlledCarTaskView(
         )
             .setLaunchBounds(launchBounds)
 
-//        options.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
-//        options.setRemoveWithTaskOrganizer(true)
+        options.setLaunchWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+        options.setRemoveWithTaskOrganizer(true)
 
         Timber.d(
             "$TAG Starting (" + mConfig.mActivityIntent.component + ") on "

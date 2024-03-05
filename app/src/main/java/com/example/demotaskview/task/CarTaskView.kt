@@ -79,7 +79,6 @@ open class CarTaskView(
         mSyncQueue = syncQueue
         focusable = NOT_FOCUSABLE
 
-        setZOrderOnTop(false)
         getHolder().setFormat(PixelFormat.TRANSLUCENT)
     }
 
