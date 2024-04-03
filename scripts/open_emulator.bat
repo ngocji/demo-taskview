@@ -1,0 +1,1 @@
+emulator -avd p1 -writable-system
