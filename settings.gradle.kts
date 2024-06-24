@@ -1,10 +1,14 @@
 pluginManagement {
     repositories {
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
         mavenCentral()
         gradlePluginPortal()
-        maven("https://maven.google.com/")
-        maven("https://oss.sonatype.org/content/repositories/snapshots")
     }
 }
 dependencyResolutionManagement {
@@ -12,8 +16,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://maven.google.com/")
-        maven("https://oss.sonatype.org/content/repositories/snapshots")
     }
 }
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
